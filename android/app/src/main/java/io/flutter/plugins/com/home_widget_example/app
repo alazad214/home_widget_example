@@ -1,72 +1,42 @@
-package com.yourcompany.yourapp
+package com.example.home_widget_example;
 
-import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
-import android.content.Context
-import android.content.Intent
-import android.graphics.BitmapFactory
-import android.widget.RemoteViews
-import es.antonborri.home_widget.HomeWidgetPlugin
-import java.io.File
+import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetManager;
+import android.content.Context;
+import android.content.Intent;
+import android.widget.RemoteViews;
+import android.graphics.BitmapFactory;
+import java.io.File;
 
-class HomeScreenWidgetProvider : AppWidgetProvider() {
+public class HomeScreenWidgetProvider extends AppWidgetProvider {
 
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-
-        if (intent.action == "PREVIOUS_IMAGE" || intent.action == "NEXT_IMAGE") {
-            val currentIndex = HomeWidgetPlugin.getData<Int>("currentIndex", context) ?: 0
-            val totalImages = HomeWidgetPlugin.getData<Int>("totalImages", context) ?: 1
-            val newIndex = when (intent.action) {
-                "PREVIOUS_IMAGE" -> if (currentIndex > 0) currentIndex - 1 else totalImages - 1
-                "NEXT_IMAGE" -> if (currentIndex < totalImages - 1) currentIndex + 1 else 0
-                else -> currentIndex
-            }
-
-            HomeWidgetPlugin.saveData("currentIndex", newIndex, context)
-            // Trigger widget update
-            val updateIntent = Intent(context, HomeScreenWidgetProvider::class.java)
-            updateIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            val ids = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, HomeScreenWidgetProvider::class.java))
-            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-            context.sendBroadcast(updateIntent)
-        }
-    }
-
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        for (widgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, R.layout.home_widget_layout)
-
-            val imagePath = HomeWidgetPlugin.getData<String>("imagePath", context)
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        for (int widgetId : appWidgetIds) {
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.home_widget_layout);
+            
+            // Set widget data (image, text, etc.)
+            String imagePath = "your_image_path_here";
             if (imagePath != null) {
-                val imageFile = File(imagePath)
+                File imageFile = new File(imagePath);
                 if (imageFile.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-                    views.setImageViewBitmap(R.id.imageView, bitmap)
+                    Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                    views.setImageViewBitmap(R.id.imageView, bitmap);
                 }
             }
+            
+            // Set up Previous and Next button functionality
+            Intent prevIntent = new Intent(context, HomeScreenWidgetProvider.class);
+            prevIntent.setAction("PREVIOUS_IMAGE");
+            PendingIntent prevPendingIntent = PendingIntent.getBroadcast(context, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            views.setOnClickPendingIntent(R.id.buttonPrev, prevPendingIntent);
+            
+            Intent nextIntent = new Intent(context, HomeScreenWidgetProvider.class);
+            nextIntent.setAction("NEXT_IMAGE");
+            PendingIntent nextPendingIntent = PendingIntent.getBroadcast(context, 1, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            views.setOnClickPendingIntent(R.id.buttonNext, nextPendingIntent);
 
-            // Set up Previous button
-            val prevIntent = Intent(context, HomeScreenWidgetProvider::class.java).apply {
-                action = "PREVIOUS_IMAGE"
-            }
-            val prevPendingIntent = PendingIntent.getBroadcast(
-                context, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.buttonPrev, prevPendingIntent)
-
-            // Set up Next button
-            val nextIntent = Intent(context, HomeScreenWidgetProvider::class.java).apply {
-                action = "NEXT_IMAGE"
-            }
-            val nextPendingIntent = PendingIntent.getBroadcast(
-                context, 1, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.buttonNext, nextPendingIntent)
-
-            appWidgetManager.updateAppWidget(widgetId, views)
+            appWidgetManager.updateAppWidget(widgetId, views);
         }
     }
 }

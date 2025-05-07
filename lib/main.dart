@@ -12,8 +12,9 @@ class MyApp extends StatelessWidget {
   final List<String> imageUrls = [
     'https://asset.gecdesigns.com/img/visiting-card-templates/elegant-visiting-card-design-for-creative-professionals-10042403-1712758228308-cover.webp',
     'https://asset.gecdesigns.com/img/visiting-card-templates/modern-creative-business-card-design-professional-sr09092409-cover.webp',
-    'https://asset.gecdesigns.com/img/visiting-card-templates/elegant-visiting-card-design-for-creative-professionals-10042403-1712758228308-cover.webp',
   ];
+
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
